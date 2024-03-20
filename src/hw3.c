@@ -165,6 +165,11 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
 
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
+
+     if (!game || !game->board) {
+        printf("Game or game board is NULL.\n");
+        return NULL;
+    }
     *num_tiles_placed=0;
     int endRow = row + (direction == 'V' ? strlen(tiles) - 1 : 0);
     int endCol = col + (direction == 'H' ? strlen(tiles) - 1 : 0);
