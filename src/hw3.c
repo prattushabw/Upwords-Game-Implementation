@@ -8,6 +8,7 @@
 #include "hw3.h" 
 
 #define DEBUG(...) fprintf(stderr, "[          ] [ DEBUG ] "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " -- %s()\n", __func__)
+
 void free_game_state(GameState *game_state) {
     if (game_state) {
         if (game_state->board) {
@@ -28,10 +29,7 @@ void free_game_state(GameState *game_state) {
 // Function to initialize the game state
 GameState* initialize_game_state(const char *filename) {
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        fprintf(stderr, "Error opening file.\n");
-        exit(1);
-    }
+
 
     int num_rows = 0;
     int num_cols = 0;
@@ -50,7 +48,7 @@ GameState* initialize_game_state(const char *filename) {
     if (game_state == NULL) {
         fclose(file);
         fprintf(stderr, "Memory allocation failed when initializing the board.\n");
-        exit(1);
+        return NULL;
     }
 
     game_state->rows = num_rows;
@@ -60,7 +58,7 @@ GameState* initialize_game_state(const char *filename) {
         fclose(file);
         free_game_state(game_state);
         fprintf(stderr, "Memory allocation failed when initializing the game_state struct to board.\n");
-        exit(1);
+        return NULL;
     }
 
     for (int i = 0; i < num_rows; i++) {
@@ -69,7 +67,7 @@ GameState* initialize_game_state(const char *filename) {
             fclose(file);
             free_game_state(game_state);
             fprintf(stderr, "Memory allocation failed when inilizing a tile.\n");
-            exit(1);
+            return NULL;
         }
 
         for (int j = 0; j < num_cols; j++) {
@@ -114,7 +112,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
     Tile **new_board = (Tile **)malloc(new_rows * sizeof(Tile *));
     if (new_board == NULL) {
       printf("Memory allocation failed to create new board rows\n");
-        exit(1);
+       return;
     }
 
     for (int i = 0; i < new_rows; i++) {
@@ -125,7 +123,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
             }
             free(new_board);
             printf( "Memory allocation failed to create new board cols\n");
-            exit(1);
+            return;
         }
 
         for (int j = 0; j < new_cols; j++) {
@@ -134,7 +132,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
                 *(new_board[i][j].top) = '.';
             } else {
                 printf("Failed to allocate memory for new tile");
-                exit(1);
+               return;
             }
             new_board[i][j].height = 0;
 
@@ -143,7 +141,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
                 new_board[i][j].top = malloc(sizeof(char)); 
                 if (new_board[i][j].top == NULL) {
                     printf("Failed to allocate memory for new tile at (%d,%d)\n", i, j);
-                    exit(1);
+                    return;
                 }
                 *(new_board[i][j].top) = *(game->board[i][j].top); // Copy the character
                 new_board[i][j].height = game->board[i][j].height; // Copy the height
@@ -199,8 +197,8 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
                 game->board[currentRow][currentCol].top = malloc(sizeof(char));
                 if (game->board[currentRow][currentCol].top == NULL) {
                     free_game_state(game);
-                    fprintf(stderr, "Memory allocation failed when placing a tile.\n");
-                    exit(1);
+                    printf("Memory allocation failed when placing a tile.\n");
+                    return game;
                 }
                 *game->board[currentRow][currentCol].top = tiles[i];
                 game->board[currentRow][currentCol].height = 1;
@@ -227,8 +225,8 @@ GameState* undo_place_tiles(GameState *game) {
 void save_game_state(GameState *game, const char *filename) {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
-        fprintf(stderr, "Error opening file for writing.\n");
-        exit(EXIT_FAILURE);
+        printf( "Error opening file for writing.\n");
+        return;
     }
 
    
