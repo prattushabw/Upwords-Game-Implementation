@@ -129,14 +129,21 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
         }
 
         for (int j = 0; j < new_cols; j++) {
-            new_board[i][j].top = "."; 
+           new_board[i][j].top = malloc(sizeof(char)); 
+            if (new_board[i][j].top != NULL) {
+                *(new_board[i][j].top) = '.';
+            } else {
+                printf("Failed to allocate memory for new tile");
+                exit(1);
+            }
+
             new_board[i][j].height = 0;
 
             // Copy data from old board
             if (i < game->rows && j < game->cols && game->board[i][j].top != NULL) {
-                new_board[i][j].top = malloc(sizeof(char)); // Allocate memory for the character
+                new_board[i][j].top = malloc(sizeof(char)); 
                 if (new_board[i][j].top == NULL) {
-                    fprintf(stderr, "Failed to allocate memory for new tile at (%d,%d)\n", i, j);
+                    printf("Failed to allocate memory for new tile at (%d,%d)\n", i, j);
                     exit(1);
                 }
                 *(new_board[i][j].top) = *(game->board[i][j].top); // Copy the character
@@ -145,80 +152,37 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
         }
     }
 
-    // Properly free the old board
+  
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
-            free(game->board[i][j].top); // Safe to call free on NULL
+            free(game->board[i][j].top); 
         }
         free(game->board[i]);
     }
     free(game->board);
 
-    // Update game state with the new board and dimensions
     game->board = new_board;
     game->rows = new_rows;
     game->cols = new_cols;
 }
 
 
-// GameState* board_resize(GameState *game, int new_rows, int new_cols){
-//     Tile **new_board =(Tile **)malloc(new_rows*sizeof(Tile*));
-//     if (new_board == NULL) {
-//         printf("Memory allocation failed to create new board rows");
-//         exit(1);
-//     }
-
-//     for (int i = 0; i < new_rows; i++) {
-//         new_board[i] = (Tile*)malloc(new_cols * sizeof(Tile));
-//         if (new_board[i] == NULL) {
-//             free(new_board);
-//             fprintf(stderr, "Memory allocation failed to create new board cols\n");
-//             exit(1);
-//         }
-
-//         for (int j = 0; j < new_cols; j++) {
-//                 new_board[i][j].top = NULL;
-//                 new_board[i][j].height = 0;
-//             if (i < game->rows && j < game->cols) {
-//                 if (game->board[i][j].top != NULL) {
-//                     new_board[i][j].top = malloc(sizeof(char));
-//                     if (new_board[i][j].top == NULL) {
-//                         fprintf(stderr, "Failed to allocate memory1 for new tile at (%d,%d)\n", i, j);
-//                         exit(1); 
-//                     }
-//                     *(new_board[i][j].top) = *(game->board[i][j].top);// Copy the characters
-//                     new_board[i][j].height = game->board[i][j].height;// Copy the height
-//                 }
-//             }else{
-//                 if (game->board[i][j].top != NULL) {
-//                     new_board[i][j].top =(char*) malloc(5*sizeof(char));
-//                     if (new_board[i][j].top == NULL) {
-//                         fprintf(stderr, "Failed to allocate memory2 for new tile at (%d,%d)\n", i, j);
-//                         exit(1); 
-//                     }
-//                     *(new_board[i][j].top) = '.';
-//                     new_board[i][j].height = -1;
-//                 }
-//             }
-            
-//         }
-//     }
-  
-//     game->board = new_board;
-//     game->rows = new_rows;
-//     game->cols = new_cols;
-//     return game;
-// }
-
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
     
     int endRow = row + (direction == 'V' ? strlen(tiles) - 1 : 0);
     int endCol = col + (direction == 'H' ? strlen(tiles) - 1 : 0);
-
+//     printf("%d", endRow);
+//    printf("%d\n", endCol);
+//    printf("%d", game->rows);
+//    printf("%d", game->cols);
    
-    if ((endRow >= game->rows || endCol >= game->cols)) {
-        board_resize(game, row, col);
-    } 
+    if ((endRow >= game->rows )) {
+        board_resize(game, endRow+1, game->cols);
+    } else if(endCol >= game->cols){
+         board_resize(game, game->rows, endCol);
+    }else if(endRow >= game->rows  &&endCol >= game->cols){
+        board_resize(game, endRow, endCol);
+    }
 
     int len = strlen(tiles);
     for (int i = 0; i < len; ++i) {
