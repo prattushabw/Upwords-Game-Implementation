@@ -136,7 +136,6 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
                 printf("Failed to allocate memory for new tile");
                 exit(1);
             }
-
             new_board[i][j].height = 0;
 
             // Copy data from old board
@@ -168,10 +167,10 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
 
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
-    
+    *num_tiles_placed=0;
     int endRow = row + (direction == 'V' ? strlen(tiles) - 1 : 0);
     int endCol = col + (direction == 'H' ? strlen(tiles) - 1 : 0);
-//     printf("%d", endRow);
+//    printf("%d", endRow);
 //    printf("%d\n", endCol);
 //    printf("%d", game->rows);
 //    printf("%d", game->cols);
