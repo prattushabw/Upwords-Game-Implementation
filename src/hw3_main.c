@@ -5,7 +5,7 @@
 
 void print_board(GameState *game) {
     if (game == NULL || game->board == NULL) {
-        printf("The game or game board is not initialized.\n");
+        printf("The game is not initialized.\n");
         return;
     }
 
