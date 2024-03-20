@@ -41,7 +41,7 @@ int main(void) {
     print_board(game);
     printf("\n\n");
  
-      game = place_tiles(game, 0, 2, 'V', "UNUSURPING", &num_tiles_placed);
+   game = place_tiles(game, 3, 2, 'H', "T Z E", &num_tiles_placed);
     print_board(game);
 
     save_game_state(game, "./tests/actual_outputs/output.txt");

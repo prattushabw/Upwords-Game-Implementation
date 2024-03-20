@@ -113,7 +113,7 @@ int can_place_tile(GameState *game, int row, int col, char tile) {
 void board_resize(GameState *game, int new_rows, int new_cols) {
     Tile **new_board = (Tile **)malloc(new_rows * sizeof(Tile *));
     if (new_board == NULL) {
-        fprintf(stderr, "Memory allocation failed to create new board rows\n");
+      printf("Memory allocation failed to create new board rows\n");
         exit(1);
     }
 
@@ -124,7 +124,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
                 free(new_board[k]);
             }
             free(new_board);
-            fprintf(stderr, "Memory allocation failed to create new board cols\n");
+            printf( "Memory allocation failed to create new board cols\n");
             exit(1);
         }
 
@@ -179,9 +179,9 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     if ((endRow >= game->rows )) {
         board_resize(game, endRow+1, game->cols);
     } else if(endCol >= game->cols){
-         board_resize(game, game->rows, endCol);
+         board_resize(game, game->rows, endCol+1);
     }else if(endRow >= game->rows  &&endCol >= game->cols){
-        board_resize(game, endRow, endCol);
+        board_resize(game, endRow+1, endCol+1);
     }
 
     int len = strlen(tiles);
