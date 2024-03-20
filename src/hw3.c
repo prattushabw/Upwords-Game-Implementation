@@ -138,7 +138,7 @@ void board_resize(GameState *game, int new_rows, int new_cols) {
 
             // Copy data from old board
             if (i < game->rows && j < game->cols && game->board[i][j].top != NULL) {
-                new_board[i][j].top = malloc(sizeof(char)); 
+                // new_board[i][j].top = malloc(sizeof(char)); 
                 if (new_board[i][j].top == NULL) {
                     printf("Failed to allocate memory for new tile at (%d,%d)\n", i, j);
                     return;
