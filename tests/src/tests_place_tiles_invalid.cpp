@@ -38,7 +38,8 @@ TEST_F(place_tiles_TestSuite, invalid_horiz_resize01) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_horiz_overlap01) {
+
+TEST_F(place_tiles_TestSuite, invalid_horiz_overlap01) {//done
     INFO("Attempt to cover all the tiles of an existing horizontal word with the same tiles.");
 	GameState *game = initialize_game_state("./tests/boards/board04.txt");
     game = place_tiles(game, 6, 11, 'H', "SNEER", &num_tiles_placed);
@@ -55,7 +56,7 @@ TEST_F(place_tiles_TestSuite, invalid_horiz_overlap01) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_horiz_overlap02) {
+TEST_F(place_tiles_TestSuite, invalid_horiz_overlap02) {//done
     INFO("Attempt to cover some of the tiles of an existing horizontal word with the same tiles without making a new word.");
 	GameState *game = initialize_game_state("./tests/boards/board04.txt");
     game = place_tiles(game, 6, 14, 'H', "ER", &num_tiles_placed);
@@ -72,7 +73,7 @@ TEST_F(place_tiles_TestSuite, invalid_horiz_overlap02) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_vert_overlap01) {
+TEST_F(place_tiles_TestSuite, invalid_vert_overlap01) {//done
     INFO("Attempt to cover all the tiles of an existing vertical word with the same tiles.");
 	GameState *game = initialize_game_state("./tests/boards/board04.txt");
     game = place_tiles(game, 4, 12, 'V', "DINGO", &num_tiles_placed);
@@ -89,7 +90,7 @@ TEST_F(place_tiles_TestSuite, invalid_vert_overlap01) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_vert_overlap02) {
+TEST_F(place_tiles_TestSuite, invalid_vert_overlap02) {//done
     INFO("Attempt to cover some the tiles of an existing vertical word with the same tiles.");
 	GameState *game = initialize_game_state("./tests/boards/board04.txt");
     game = place_tiles(game, 2, 7, 'V', "H B ID", &num_tiles_placed);
@@ -179,7 +180,7 @@ TEST_F(place_tiles_TestSuite, invalid_placement04) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, height_exceed_limit01)
+TEST_F(place_tiles_TestSuite, height_exceed_limit01) //done
 {   
     INFO("Checking that height of a stack does not exceed 5.");
 	GameState *game = initialize_game_state("./tests/boards/board02.txt"); 
@@ -207,7 +208,7 @@ TEST_F(place_tiles_TestSuite, height_exceed_limit01)
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, height_exceed_limit02)
+TEST_F(place_tiles_TestSuite, height_exceed_limit02)//done
 {   
     INFO("Checking that height of a stack does not exceed 5.");
 	GameState *game = initialize_game_state("./tests/boards/board02.txt"); 
@@ -388,7 +389,7 @@ TEST_F(place_tiles_TestSuite, invalid_vert_touch05) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_vert_touch06) {
+TEST_F(place_tiles_TestSuite, invalid_vert_touch06) {//done
     INFO("Attempt to place tiles vertically where a space in the input corresponds with a blank spot (.) on the board.");
 	GameState *game = initialize_game_state("./tests/boards/board06.txt");
     game = place_tiles(game, 0, 12, 'V', "  AD E", &num_tiles_placed);
@@ -406,7 +407,7 @@ TEST_F(place_tiles_TestSuite, invalid_vert_touch06) {
 }
 
 
-TEST_F(place_tiles_TestSuite, invalid_vert_touch07) {
+TEST_F(place_tiles_TestSuite, invalid_vert_touch07) {//done
     INFO("Attempt to place tiles vertically where a space in the input corresponds with a blank spot (.) on the board.");
 	GameState *game = initialize_game_state("./tests/boards/board08.txt");
     game = place_tiles(game, 2, 6, 'V', " C", &num_tiles_placed);
@@ -510,7 +511,7 @@ TEST_F(place_tiles_TestSuite, invalid_horiz_touch04) {
     free_game_state(game);
 }
 
-TEST_F(place_tiles_TestSuite, invalid_horiz_touch05) {
+TEST_F(place_tiles_TestSuite, invalid_horiz_touch05) {//done
     INFO("Attempt to place tiles horizontally where a space in the input corresponds with a blank spot (.) on the board.");
 	GameState *game = initialize_game_state("./tests/boards/board07.txt");
     game = place_tiles(game, 2, 3, 'H', " CA ", &num_tiles_placed);
