@@ -231,6 +231,7 @@ void record_game_state(GameHistory *history, GameState *state) {
         history->snapshots = realloc(history->snapshots, history->capacity * sizeof(GameState*));
     }
     history->snapshots[history->count++] = deep_copy_game_state(state);
+
 }
 
 void free_game_history(GameHistory *history) {
@@ -355,6 +356,40 @@ GameState* undo_place_tiles(GameState *game) {
     return game;
 }
 
+/*
+GameState* undo_place_tiles(GameState *game) {
+    if (!game || !game->history || game->history->count == 0) {
+        printf("No moves to undo.\n");
+        return game;
+    }
+
+    int lastIndex = --game->history->count;
+    GameState *snapshot = game->history->snapshots[lastIndex];
+
+    // free the current game state's contents
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            free(game->board[i][j].top);  
+        }
+        free(game->board[i]);
+    }
+    free(game->board);
+
+   
+    GameState* newState = deep_copy_game_state(snapshot);
+   
+    game->board = newState->board;
+    game->rows = newState->rows;
+    game->cols = newState->cols;
+   
+    free(snapshot);
+    game->history->snapshots[lastIndex] = NULL;
+    free(newState);
+
+    return game;
+}
+*/
+
 
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
@@ -371,7 +406,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         return NULL; 
     }
     record_game_state(game->history, currentStateCopy);
-    free_game_state(currentStateCopy);
+    
 
     *num_tiles_placed = 0;
 
