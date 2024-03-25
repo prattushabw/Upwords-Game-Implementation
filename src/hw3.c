@@ -465,6 +465,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     printf("%s\n", formedWord);
     if (!isWordValid(formedWord)) {
         printf("Placed word is not valid according to words.txt.\n");
+         free(formedWord);
         return undo_place_tiles(game);
     }
     free(formedWord);
