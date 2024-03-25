@@ -332,27 +332,25 @@ GameState* undo_place_tiles(GameState *game) {
     }
 
     int lastIndex = --game->history->count;
-    GameState *snapshot = game->history->snapshots[lastIndex];
+    GameState* newState = game->history->snapshots[lastIndex];
 
     // free the current game state's contents
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
-            free(game->board[i][j].top);  
+             if (game->board[i][j].top) {
+                free(game->board[i][j].top);
+            } 
         }
         free(game->board[i]);
     }
     free(game->board);
-
-   
-    GameState* newState = deep_copy_game_state(snapshot);
    
     game->board = newState->board;
     game->rows = newState->rows;
     game->cols = newState->cols;
    
-    free(snapshot);
     game->history->snapshots[lastIndex] = NULL;
-    free(newState);
+   
 
     return game;
 }
@@ -367,11 +365,13 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
 
 
     GameState *currentStateCopy = deep_copy_game_state(game);
+
     if (!currentStateCopy) {
         printf("Failed to record the current game state.\n");
         return NULL; 
     }
     record_game_state(game->history, currentStateCopy);
+    free_game_state(currentStateCopy);
 
     *num_tiles_placed = 0;
 
@@ -462,6 +462,8 @@ void save_game_state(GameState *game, const char *filename) {
         }
         fprintf(file, "\n"); 
     }
+
+    free_game_history(game->history);
 
     fclose(file);
 }
