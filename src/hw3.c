@@ -332,9 +332,6 @@ GameState* undo_place_tiles(GameState *game) {
         return game;
     }
 
-    int lastIndex = --game->history->count;
-    GameState* newState = game->history->snapshots[lastIndex];
-
     // free the current game state's contents
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
@@ -345,12 +342,16 @@ GameState* undo_place_tiles(GameState *game) {
         free(game->board[i]);
     }
     free(game->board);
+
+    int lastIndex = --game->history->count;
+    GameState* newState = game->history->snapshots[lastIndex];
    
     game->board = newState->board;
     game->rows = newState->rows;
     game->cols = newState->cols;
    
     game->history->snapshots[lastIndex] = NULL;
+    free(newState);
    
 
     return game;
@@ -406,8 +407,8 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         return NULL; 
     }
     record_game_state(game->history, currentStateCopy);
+    free_game_state(currentStateCopy); 
     
-
     *num_tiles_placed = 0;
 
     int endRow = row;
