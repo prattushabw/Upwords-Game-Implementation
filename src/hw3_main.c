@@ -33,7 +33,7 @@ void print_board(GameState *game) {
 
 int main(void) {
     int num_tiles_placed=0;
-    GameState *game = initialize_game_state("./tests/boards/board06.txt");
+   GameState *game = initialize_game_state("./tests/boards/board06.txt");
     if (!game) {
         fprintf(stderr, "Failed to initialize game.\n");
         return EXIT_FAILURE;
@@ -41,22 +41,8 @@ int main(void) {
     print_board(game);
     printf("\n\n");
 
-    game = undo_place_tiles(game);
-    game = place_tiles(game, 8, 5, 'V', "SOME", &num_tiles_placed);
-   
-    game = place_tiles(game, 9, 17, 'V', "ABBAGE", &num_tiles_placed);
-   
-    game = place_tiles(game, 0, 0, 'H', "CAT", &num_tiles_placed);
     
-    game = place_tiles(game, 8, 5, 'V', "SOME", &num_tiles_placed);
-  
-    game = place_tiles(game, 10, 5, 'H', " ANGANOCOLUM ITE", &num_tiles_placed);
- 
-    game = place_tiles(game, 10, 5, 'H', "HOME", &num_tiles_placed);
-    
-    game = undo_place_tiles(game);
-    game = undo_place_tiles(game);
-    game = undo_place_tiles(game);
+   game = place_tiles(game, 2, 2, 'V', "LI TLESSNESS", &num_tiles_placed);
     
    
     print_board(game);

@@ -28,7 +28,7 @@ void free_game_state(GameState *game_state) {
 
 GameHistory* initialize_game_history() {
     GameHistory *history = malloc(sizeof(GameHistory));
-    history->snapshots = malloc(10 * sizeof(GameState*)); // Initial capacity
+    history->snapshots = malloc(10 * sizeof(GameState*)); 
     history->count = 0;
     history->capacity = 10;
     return history;
@@ -244,68 +244,57 @@ void free_game_history(GameHistory *history) {
     free(history); 
 }
 
-char* captureFormedWord(const GameState *game, int row, int col, char direction, const char *tiles) {
-    int len = strlen(tiles);
-    int startRow = row, startCol = col;
-    int endRow = row, endCol = col;
-
+char* getFormedWord(const GameState *game, int row, int col, char direction, const char *tiles) {
+    //printf("%d, %d,%c, %s", row, col, direction, tiles);
    
+    int startRow = row, endRow = row + strlen(tiles) - 1, startCol = col, endCol = col + strlen(tiles) - 1;
+
     if (direction == 'H') {
-        // Check left
-        while (startCol > 0 && game->board[startRow][startCol - 1].top != NULL) {
-            startCol--;
-        }
-        // Check right
-        endCol = col + len - 1;
-        while (endCol < game->cols - 1 && game->board[endRow][endCol + 1].top != NULL) {
-            endCol++;
-        }
-    } else if (direction == 'V') {
-        // Check up
-        while (startRow > 0 && game->board[startRow - 1][startCol].top != NULL) {
-            startRow--;
-        }
-        // Check down
-        endRow = row + len - 1;
-        while (endRow < game->rows - 1 && game->board[endRow + 1][endCol].top != NULL) {
-            endRow++;
-        }
+        while (startCol > 0 && game->board[row][startCol - 1].top) startCol--;
+        while (endCol < game->cols - 1 && game->board[row][endCol + 1].top) endCol++;
+    } else { // 'V'
+        while (startRow > 0 && game->board[startRow - 1][col].top) startRow--;
+        while (endRow < game->rows - 1 && game->board[endRow + 1][col].top) endRow++;
     }
 
-   
-    int wordLen = (direction == 'H') ? (endCol - startCol + 1) : (endRow - startRow + 1);
+    int wordLen;
+    if (direction == 'H') {
+        wordLen = endCol - startCol + 1;
+    } else { // 'V'
+        wordLen = endRow - startRow + 1;
+    }
     char *word = malloc(wordLen + 1); 
 
+    int actualIndex=0;
    
     for (int i = 0; i < wordLen; i++) {
+        int currentRow, currentCol;
         if (direction == 'H') {
-            if (game->board[row][startCol + i].top != NULL) {
-                word[i] = *game->board[row][startCol + i].top;
-            } else {
-                word[i] = '.';
-            }
-        } else {
-            if (game->board[startRow + i][col].top != NULL) {
-                word[i] = *game->board[startRow + i][col].top;
-            } else {
-                word[i] = '.';
-            }
+            currentRow = row;
+            currentCol = startCol + i;
+        } else { //'V'
+            currentRow = startRow + i;
+            currentCol = col;
         }
+        if (game->board[currentRow][currentCol].top) {
+            char tileChar = *(game->board[currentRow][currentCol].top);
+            if (tileChar != '.' && tileChar != ' ') {
+                word[actualIndex++] = tolower((unsigned char)tileChar);
+            }
+        } 
+        // else {
+        //     if (actualIndex > 0) { 
+        //         word[actualIndex++] = ' ';
+        //     }
+        //}
     }
     word[wordLen] = '\0'; 
-
-    char *temp = word;  
-    while (*temp) {
-        *temp = tolower((unsigned char) *temp);
-        temp++;
-    }
 
     return word;
 }
 
-bool isWordValid(const char* word) {
 
-    // FILE* file = fopen("words.txt", "r");
+bool isWordValid(const char* word) {
     FILE *file = fopen("./tests/words.txt", "r");
     
     char fileWord[100]; 
@@ -356,41 +345,6 @@ GameState* undo_place_tiles(GameState *game) {
 
     return game;
 }
-
-/*
-GameState* undo_place_tiles(GameState *game) {
-    if (!game || !game->history || game->history->count == 0) {
-        printf("No moves to undo.\n");
-        return game;
-    }
-
-    int lastIndex = --game->history->count;
-    GameState *snapshot = game->history->snapshots[lastIndex];
-
-    // free the current game state's contents
-    for (int i = 0; i < game->rows; i++) {
-        for (int j = 0; j < game->cols; j++) {
-            free(game->board[i][j].top);  
-        }
-        free(game->board[i]);
-    }
-    free(game->board);
-
-   
-    GameState* newState = deep_copy_game_state(snapshot);
-   
-    game->board = newState->board;
-    game->rows = newState->rows;
-    game->cols = newState->cols;
-   
-    free(snapshot);
-    game->history->snapshots[lastIndex] = NULL;
-    free(newState);
-
-    return game;
-}
-*/
-
 
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
@@ -461,8 +415,8 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         }
     }
 
-    char* formedWord = captureFormedWord(game, row, col, direction, tiles);
-    printf("%s\n", formedWord);
+    char* formedWord = getFormedWord(game, row, col, direction,tiles);
+    //printf("|%s|\n", formedWord);
     if (!isWordValid(formedWord)) {
         printf("Placed word is not valid according to words.txt.\n");
          free(formedWord);
