@@ -244,55 +244,35 @@ void free_game_history(GameHistory *history) {
     free(history); 
 }
 
-char* getFormedWord(const GameState *game, int row, int col, char direction, const char *tiles) {
-    //printf("%d, %d,%c, %s", row, col, direction, tiles);
-   
-    int startRow = row, endRow = row + strlen(tiles) - 1, startCol = col, endCol = col + strlen(tiles) - 1;
+char* getFormedWord(const GameState *game, int row, int col, char direction) {
+    int startRow = row, startCol = col, endRow = row, endCol = col;
 
     if (direction == 'H') {
-        while (startCol > 0 && game->board[row][startCol - 1].top) startCol--;
-        while (endCol < game->cols - 1 && game->board[row][endCol + 1].top) endCol++;
-    } else { // 'V'
-        while (startRow > 0 && game->board[startRow - 1][col].top) startRow--;
-        while (endRow < game->rows - 1 && game->board[endRow + 1][col].top) endRow++;
+        // left.
+        while (startCol > 0 && game->board[row][startCol - 1].top && *(game->board[row][startCol - 1].top) != '.') startCol--;
+        // right.
+        while (endCol < game->cols - 1 && game->board[row][endCol + 1].top && *(game->board[row][endCol + 1].top) != '.') endCol++;
+    } else { // 'V'.
+        //  upwards.
+        while (startRow > 0 && game->board[startRow - 1][col].top && *(game->board[startRow - 1][col].top) != '.') startRow--;
+        //  downwards.
+        while (endRow < game->rows - 1 && game->board[endRow + 1][col].top && *(game->board[endRow + 1][col].top) != '.') endRow++;
     }
 
-    int wordLen;
-    if (direction == 'H') {
-        wordLen = endCol - startCol + 1;
-    } else { // 'V'
-        wordLen = endRow - startRow + 1;
-    }
-    char *word = malloc(wordLen + 1); 
 
-    int actualIndex=0;
-   
+    int wordLen = (direction == 'H') ? endCol - startCol + 1 : endRow - startRow + 1;
+    char* word = (char*)malloc(wordLen + 1); 
+    word[wordLen] = '\0';
+
     for (int i = 0; i < wordLen; i++) {
-        int currentRow, currentCol;
-        if (direction == 'H') {
-            currentRow = row;
-            currentCol = startCol + i;
-        } else { //'V'
-            currentRow = startRow + i;
-            currentCol = col;
-        }
-        if (game->board[currentRow][currentCol].top) {
-            char tileChar = *(game->board[currentRow][currentCol].top);
-            if (tileChar != '.' && tileChar != ' ') {
-                word[actualIndex++] = tolower((unsigned char)tileChar);
-            }
-        } 
-        // else {
-        //     if (actualIndex > 0) { 
-        //         word[actualIndex++] = ' ';
-        //     }
-        //}
+        int currentRow = (direction == 'H') ? row : startRow + i;
+        int currentCol = (direction == 'H') ? startCol + i : col;
+        char tileChar = (game->board[currentRow][currentCol].top) ? *(game->board[currentRow][currentCol].top) : '.';
+        word[i] = (tileChar == '.') ? ' ' : tolower((unsigned char)tileChar); 
     }
-    word[wordLen] = '\0'; 
 
     return word;
 }
-
 
 bool isWordValid(const char* word) {
     FILE *file = fopen("./tests/words.txt", "r");
@@ -354,6 +334,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     }
 
 
+
     GameState *currentStateCopy = deep_copy_game_state(game);
 
     if (!currentStateCopy) {
@@ -394,7 +375,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
       
 
         if (!can_place_tile(game, currentRow, currentCol, tiles[i])) {
-            return game; 
+            return undo_place_tiles(game);
         }
        
         if (tiles[i] != ' ') { 
@@ -413,10 +394,11 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
             }
             (*num_tiles_placed)++;
         }
+
     }
 
-    char* formedWord = getFormedWord(game, row, col, direction,tiles);
-    //printf("|%s|\n", formedWord);
+    char* formedWord = getFormedWord(game, row, col, direction);
+    printf("|%s|\n", formedWord);
     if (!isWordValid(formedWord)) {
         printf("Placed word is not valid according to words.txt.\n");
          free(formedWord);
