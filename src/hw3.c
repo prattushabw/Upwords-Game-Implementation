@@ -326,6 +326,56 @@ GameState* undo_place_tiles(GameState *game) {
     return game;
 }
 
+int is_first_move(const GameState *game) {
+   
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            
+            if (game->board[i][j].top != NULL) {
+                if(*game->board[i][j].top != '.'){
+                     return 0; 
+                }     
+            }
+        }
+    }
+    return 1; 
+}
+
+int check_valid_word_modification(GameState *game, int row, int col, char direction, const char *word) {
+    if(is_first_move(game)){
+        return 1;
+    }
+    int len = strlen(word);
+    int originalTileCount = 0;
+    int originalTilesCovered = len; 
+
+    for (int i = 0; i < len; i++) {
+        if (word[i] == ' ') {
+            originalTilesCovered--; 
+        }
+    }
+
+    int currentRow, currentCol;
+    for (currentRow = row, currentCol = col;
+         currentRow >= 0 && currentCol >= 0 && currentRow < game->rows && currentCol < game->cols;
+         currentRow += direction == 'V' ? 1 : 0, currentCol += direction == 'H' ? 1 : 0) {
+
+        if (game->board[currentRow][currentCol].top != NULL) {
+            originalTileCount++;
+        } else {
+           
+            break;
+        }
+    }
+
+    if (originalTilesCovered == len && originalTileCount == len) {
+        return 0; 
+    }
+
+    return 1;
+}
+
+
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
     if (!game || !game->board) {
@@ -333,7 +383,12 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         return NULL;
     }
 
-
+    int len = (int)strlen(tiles); // Cast size_t to int and store in len for re-use.
+    if (is_first_move(game) && len<2) {
+        printf("The first word must contain at least two letters.\n");
+        return game;
+    }
+    
 
     GameState *currentStateCopy = deep_copy_game_state(game);
 
@@ -367,8 +422,13 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     }else if(endRow >= game->rows  &&endCol >= game->cols){
         board_resize(game, endRow+1, endCol+1);
     }
+    
+    
+    if (!check_valid_word_modification(game, row, col, direction, tiles)) {
+        printf("covering all words.\n");
+        return undo_place_tiles(game); 
+    }
 
-    int len = strlen(tiles);
     for (int i = 0; i < len; ++i) {
         int currentRow = row + (direction == 'V' ? i : 0);
         int currentCol = col + (direction == 'H' ? i : 0);
@@ -377,6 +437,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         if (!can_place_tile(game, currentRow, currentCol, tiles[i])) {
             return undo_place_tiles(game);
         }
+    
        
         if (tiles[i] != ' ') { 
             if (game->board[currentRow][currentCol].top == NULL) {
