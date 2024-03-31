@@ -224,7 +224,6 @@ GameState* deep_copy_game_state(const GameState *src) {
     return copy;
 }
 
-
 void record_game_state(GameHistory *history, GameState *state) {
     if (history->count >= history->capacity) {
         history->capacity *= 2;
@@ -341,41 +340,47 @@ int is_first_move(const GameState *game) {
     return 1; 
 }
 
-int check_valid_word_modification(GameState *game, int row, int col, char direction, const char *word) {
-    if(is_first_move(game)){
+int check_perpendicular_connection(const GameState *game, int row, int col, char direction) {
+    
+    char perpendicular_direction = (direction == 'H') ? 'V' : 'H';
+    char *formedWord = getFormedWord(game, row, col, perpendicular_direction);
+    printf("the word formed is: %s\n",formedWord);
+    int isValid = isWordValid(formedWord);
+
+    free(formedWord); 
+
+    if (!isValid) {
+        printf("The placed tile at row %d, col %d does not form a valid word in the %s direction.\n", row, col, perpendicular_direction == 'H' ? "horizontal" : "vertical");
+        return 0;
+    }
+    return 1;
+}
+
+int check_word_connection(const GameState *game, int row, int col, char direction, const char *word) {
+    if (is_first_move(game)) {
         return 1;
     }
     int len = strlen(word);
-    int originalTileCount = 0;
-    int originalTilesCovered = len; 
+    int connected = 0; 
 
-    for (int i = 0; i < len; i++) {
-        if (word[i] == ' ') {
-            originalTilesCovered--; 
+    for (int i = 0; i < len; ++i) {
+        int currentRow = (direction == 'H') ? row : row + i;
+        int currentCol = (direction == 'H') ? col + i : col;
+
+
+        int perpendicular_connected = check_perpendicular_connection(game, currentRow, currentCol, direction);
+        if (perpendicular_connected > 0) {
+            connected = 1;
         }
     }
-
-    int currentRow, currentCol;
-    for (currentRow = row, currentCol = col;
-         currentRow >= 0 && currentCol >= 0 && currentRow < game->rows && currentCol < game->cols;
-         currentRow += direction == 'V' ? 1 : 0, currentCol += direction == 'H' ? 1 : 0) {
-
-        if (game->board[currentRow][currentCol].top != NULL) {
-            originalTileCount++;
-        } else {
-           
-            break;
-        }
-    }
-
-    if (originalTilesCovered == len && originalTileCount == len) {
-        return 0; 
+   
+    if (!connected) {
+        printf("The placed word does not touch any existing words.\n");
+        return 0;
     }
 
     return 1;
 }
-
-
 
 GameState* place_tiles(GameState *game, int row, int col, char direction, const char *tiles, int *num_tiles_placed) {
     if (!game || !game->board) {
@@ -383,13 +388,11 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
         return NULL;
     }
 
-    int len = (int)strlen(tiles); // Cast size_t to int and store in len for re-use.
+    int len = (int)strlen(tiles); 
     if (is_first_move(game) && len<2) {
         printf("The first word must contain at least two letters.\n");
         return game;
     }
-    
-
     GameState *currentStateCopy = deep_copy_game_state(game);
 
     if (!currentStateCopy) {
@@ -422,12 +425,19 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     }else if(endRow >= game->rows  &&endCol >= game->cols){
         board_resize(game, endRow+1, endCol+1);
     }
+
     
-    
-    if (!check_valid_word_modification(game, row, col, direction, tiles)) {
-        printf("covering all words.\n");
-        return undo_place_tiles(game); 
+    if (!check_word_connection(game, row, col, direction, tiles)) {
+        printf("Invalid move: The word does not connect properly with existing tiles.\n");
+         return undo_place_tiles(game);
     }
+    // else{
+    //     if(!check_valid_word_modification(game, row, col, direction, tiles)){
+    //         printf("Covering up all the words.\n");
+    //         return undo_place_tiles(game);
+    //     }
+    // }
+    
 
     for (int i = 0; i < len; ++i) {
         int currentRow = row + (direction == 'V' ? i : 0);
@@ -435,6 +445,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
       
 
         if (!can_place_tile(game, currentRow, currentCol, tiles[i])) {
+            *num_tiles_placed = 0;
             return undo_place_tiles(game);
         }
     
@@ -462,6 +473,7 @@ GameState* place_tiles(GameState *game, int row, int col, char direction, const 
     printf("|%s|\n", formedWord);
     if (!isWordValid(formedWord)) {
         printf("Placed word is not valid according to words.txt.\n");
+        *num_tiles_placed = 0;
          free(formedWord);
         return undo_place_tiles(game);
     }
